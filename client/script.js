@@ -82,6 +82,7 @@ const handleSubmit = async (e) => {
 
     loader(messageDiv)
 
+
     const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/', {
         method: 'post',
         headers: {
