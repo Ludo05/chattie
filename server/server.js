@@ -6,6 +6,7 @@ import {Configuration, OpenAIApi} from 'openai'
 dotenv.config()
 
 const configuration = new Configuration({
+    organization: "org-bIpHT1mYyy7QJRzHMVzTrgd6",
     apiKey: process.env.OPEN_API_KEY,
 })
 
@@ -17,9 +18,11 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', async (req,res) => {
-    res.status(200).send('Hello APIs')
+    res.status(200).json({home: 'my personal chat'})
 })
 
+
+async function callAPI() {}
 
 app.post('/', async (req, res) => {
     try {
@@ -44,6 +47,7 @@ app.post('/', async (req, res) => {
 
     }
 })
+
 
 app.listen(8080, () => {
     console.log('http://localhost:8080')

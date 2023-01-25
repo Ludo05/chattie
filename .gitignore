@@ -9,9 +9,11 @@ lerna-debug.log*
 
 client/node_modules
 server/node_modules
+r_chattie/node_modules
 server/.env
 dist
 dist-ssr
+r_chattie/dist
 *.local
 .env
 
