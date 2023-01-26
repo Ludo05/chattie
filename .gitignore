@@ -27,3 +27,8 @@ r_chattie/dist
 *.njsproj
 *.sln
 *.sw?
+
+# Elastic Beanstalk Files
+server/.elasticbeanstalk/*
+server/.elasticbeanstalk/*.cfg.yml
+server/.elasticbeanstalk/*.global.yml
