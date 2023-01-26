@@ -1,5 +1,5 @@
 import './App.css';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 
 function ChatMessage({ message }) {
@@ -26,30 +26,70 @@ function ChatMessage({ message }) {
     )
 }
 
-
 function App() {
     const [input, setInput] = useState("");
-    const [chatLog, setChatLog] = useState([
-        {
-            user: 'gpt',
-            message: 'How can I help you today?'
+    const [chatLog, setChatLog] = useState([]);
+
+    useEffect(() => {
+        loadResults()
+    }, []);
+
+    async function loadResults() {
+        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        const data = await response.json()
+        setChatLog(data)
+    }
+
+    async function deleChat(event) {
+        event.preventDefault()
+        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+
+        if(response && response.ok) {
+            setChatLog([])
+            setInput('')
         }
-    ]);
+    }
 
     async function handleSubmit(event) {
         event.preventDefault()
-        console.log('submit')
-        setChatLog(prevState => ([...prevState, { user: 'me', message: `${input}`}]))
-        setInput('')
-    }
+        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: input
+                })
+            })
 
+        if(response && response.ok) {
+            const data = await response.json()
+            setChatLog(prevState => ([...prevState, { message: data.user.message, user: data.user.user, _id: data.user._id}]))
+            setChatLog(prevState => ([...prevState, { message: data.gpt.message, user: data.gpt.user , _id: data.gpt._id}]))
+        }
+        setInput('')
+
+
+    }
     function onChange(event) {
         setInput(event.target.value)
     }
+
   return (
     <div className="App">
       <aside className={'sidemenu'}>
-        <div className={'side-menu-btn'}>
+        <div onClick={deleChat} className={'side-menu-btn'}>
             <span>+</span> New chat
         </div>
       </aside>
@@ -57,21 +97,22 @@ function App() {
           <div className={'chat-log'}>
               {chatLog.map((message, index) => {
                   return (
-                      <ChatMessage  key={index} message={message} />
+                      <ChatMessage  key={message._id} message={message} />
                   )
               })}
           </div>
-        <div className={'input-box'}>
-            <form onSubmit={handleSubmit}>
-                <input
-                    className={'input-area'}
-                    rows={1}
-                    name={'input'}
-                    value={input}
-                    onChange={onChange}
-                    placeholder={'Type your message here'} />
-            </form>
-        </div>
+      </section>
+      <section>
+          <div className={'input-box'}>
+              <form onSubmit={handleSubmit}>
+                  <input
+                      className={'input-area'}
+                      name={'input'}
+                      value={input}
+                      onChange={onChange}
+                      placeholder={'Type your message here'} />
+              </form>
+          </div>
       </section>
     </div>
   );

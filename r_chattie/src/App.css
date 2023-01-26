@@ -16,6 +16,7 @@
   flex: 1;
   background-color: rgba(40,40,120,0.1);
   position: relative;
+  overflow-y: scroll;
 
 }
 
@@ -42,7 +43,7 @@
 
 .input-box{
   padding: 24px;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0; right: 0;
   }
@@ -52,10 +53,10 @@
   color: white;
   font-size: 1.25em;
   background-color: #40414f;
-  width: 90%;
+  width: 75%;
   border-radius: 5px;
   border-color: transparent;
-  margin: 12px;
+  margin: 0 300px;
   outline: none;
   box-shadow: 0 8px 4px 0 rgba(0,0,0,0.5) ;
 
@@ -87,7 +88,7 @@
 .avatar{
   background-color: white;
   border-radius: 50%;
-  width: 40px;
+  height: 40px;
   aspect-ratio: 1;
 }
 
