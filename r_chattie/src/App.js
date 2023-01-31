@@ -1,117 +1,72 @@
 import './App.css';
-import {useEffect, useState} from "react";
-
-
-function ChatMessage({ message }) {
-    return (
-        <div className={`chat-message ${message.user === 'gpt' && 'chatgpt'} `}>
-            <div className="chat-message-center">
-                <div className={`avatar ${message.user === 'gpt' && 'chatgpt'}`}>
-                    {message.user === 'gpt' &&          <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={40}
-                        fill={'purple'}
-                        height={40}
-                        viewBox="0 0 24 24"
-                    >
-                        <title>{"OpenAI icon"}</title>
-                        <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08-4.778 2.758a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5Z" />
-                    </svg>}
-                </div>
-                <div className="message">
-                    {message.message}
-                </div>
-            </div>
-        </div>
-    )
-}
-
+import { useRef }  from "react";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import { ChatMessage } from "./components/chat-message";
+import { askQuestion, loadResults, deleteChat } from './api-calls/index'
 function App() {
-    const [input, setInput] = useState("");
-    const [chatLog, setChatLog] = useState([]);
-
-    useEffect(() => {
-        loadResults()
-    }, []);
-
-    async function loadResults() {
-        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-
-        const data = await response.json()
-        setChatLog(data)
-    }
-
-    async function deleChat(event) {
-        event.preventDefault()
-        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-
-        if(response && response.ok) {
-            setChatLog([])
-            setInput('')
+    const textInput = useRef("");
+    const queryClient = useQueryClient()
+    const { data, isError, isLoading, error } = useQuery(['results'], loadResults)
+    const question = useMutation(askQuestion, {
+        onSuccess: async () => {
+            textInput.current.value = ""
+            await queryClient.invalidateQueries(['results'])
         }
-    }
-
-    async function handleSubmit(event) {
-        event.preventDefault()
-        const response = await fetch('http://serv-env.eba-tfnkxnjy.us-east-1.elasticbeanstalk.com/chats', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: input
-                })
-            })
-
-        if(response && response.ok) {
-            const data = await response.json()
-            setChatLog(prevState => ([...prevState, { message: data.user.message, user: data.user.user, _id: data.user._id}]))
-            setChatLog(prevState => ([...prevState, { message: data.gpt.message, user: data.gpt.user , _id: data.gpt._id}]))
+    })
+    const clearChat = useMutation(deleteChat, {
+        onSuccess: async () => {
+            textInput.current.value = ""
+            await queryClient.invalidateQueries(['results'])
         }
-        setInput('')
+    })
 
+    function handleSubmit (e) {
+        e.preventDefault()
+        question.mutate(textInput.current.value)
+    }
+
+    function handleDelete() {
+        clearChat.mutate()
 
     }
-    function onChange(event) {
-        setInput(event.target.value)
+
+    if (isLoading) {
+        return <span>Loading...</span>
     }
+
+    if (isError) {
+        return <span>Error: {error.message}</span>
+    }
+
 
   return (
     <div className="App">
       <aside className={'sidemenu'}>
-        <div onClick={deleChat} className={'side-menu-btn'}>
+        <div onClick={handleDelete} className={'side-menu-btn'}>
             <span>+</span> New chat
         </div>
       </aside>
       <section className={'chatbox'}>
           <div className={'chat-log'}>
-              {chatLog.map((message, index) => {
+              {data.map((message, index) => {
                   return (
-                      <ChatMessage  key={message._id} message={message} />
+                      <>
+                          <ChatMessage key={index} message={message} />
+                      </>
                   )
               })}
           </div>
       </section>
       <section>
+
           <div className={'input-box'}>
-              <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
                   <input
                       className={'input-area'}
                       name={'input'}
-                      value={input}
-                      onChange={onChange}
+                      ref={textInput}
                       placeholder={'Type your message here'} />
-              </form>
+          </form>
           </div>
       </section>
     </div>
