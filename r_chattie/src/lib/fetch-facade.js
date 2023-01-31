@@ -1,8 +1,15 @@
 class FetchFacade{
+    constructor() {
+    }
 
     get(url) {
         return new Promise((resolve, reject) => {
-            fetch(url, {
+
+            if(typeof url !== "string"){
+              return reject('url must be a string')
+            }
+
+           return fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -12,13 +19,18 @@ class FetchFacade{
                     return resolve(response.json())
                 }
             }).catch(err => {
-                reject(err)
+               return reject(err)
             })
         })
     }
 
     delete(url, options = {}) {
         return new Promise((resolve, reject) => {
+
+            if(typeof url !== "string"){
+                return reject('url must be a string')
+            }
+
             return fetch(url, {
                 method: "DELETE",
                 ...options
@@ -32,6 +44,11 @@ class FetchFacade{
 
     post(url, options = {}) {
         return new Promise((resolve, reject) => {
+
+            if(typeof url !== "string"){
+                return reject('url must be a string')
+            }
+
             return fetch(url, {
                 method: "POST",
                 ...options
