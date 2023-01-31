@@ -1,6 +1,6 @@
-export default class FetchFacade{
+class FetchFacade{
 
-    static get(url) {
+    get(url) {
         return new Promise((resolve, reject) => {
             fetch(url, {
                 method: 'GET',
@@ -17,7 +17,7 @@ export default class FetchFacade{
         })
     }
 
-    static delete(url, options = {}) {
+    delete(url, options = {}) {
         return new Promise((resolve, reject) => {
             return fetch(url, {
                 method: "DELETE",
@@ -30,7 +30,7 @@ export default class FetchFacade{
         })
     }
 
-    static post(url, options = {}) {
+    post(url, options = {}) {
         return new Promise((resolve, reject) => {
             return fetch(url, {
                 method: "POST",
@@ -43,3 +43,5 @@ export default class FetchFacade{
         })
     }
 }
+
+export default new FetchFacade()
