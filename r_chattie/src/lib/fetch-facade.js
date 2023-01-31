@@ -5,6 +5,7 @@ class FetchFacade{
     get(url) {
         return new Promise((resolve, reject) => {
 
+            
             if(typeof url !== "string"){
               return reject('url must be a string')
             }
